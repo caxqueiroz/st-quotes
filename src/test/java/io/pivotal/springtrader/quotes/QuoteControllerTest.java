@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author cq
  */
 @Category(UnitTests.class)
-public class QuoteControllerTest {
+public class QuoteControllerTest implements UnitTests{
     MockMvc mockMvc;
 
     @InjectMocks
