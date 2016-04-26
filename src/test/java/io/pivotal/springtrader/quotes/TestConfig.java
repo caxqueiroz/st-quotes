@@ -1,18 +1,29 @@
 package io.pivotal.springtrader.quotes;
 
-
+import com.github.fakemongo.Fongo;
+import com.mongodb.Mongo;
 import io.pivotal.springtrader.quotes.domain.Stock;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.data.mongodb.MongoDbFactory;
+import org.springframework.data.mongodb.config.AbstractMongoConfiguration;
+import org.springframework.data.mongodb.config.EnableMongoAuditing;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 /**
- * Defaults to use for the tests.
- *
- * @author David Ferreira Pinto
+ * Created by cq on 4/12/15.
  */
-public class TestConfiguration {
+@Configuration
+@Profile("test")
+@EnableMongoAuditing
+@EnableMongoRepositories(basePackages = {"io.pivotal.springtrader.quotes"})
+public class TestConfig extends AbstractMongoConfiguration {
 
     public static final String QUOTE_SYMBOL = "AAPL";
     public static final String QUOTE_NAME = "Apple Inc";
@@ -25,6 +36,30 @@ public class TestConfiguration {
 
     public static final String COMPANY_EXCHANGE = "NASDAQ";
     public static final String NULL_QUOTE_SYMBOL = "LALALALA";
+
+    @Bean
+    public MongoTemplate mongoTemplate(MongoDbFactory mongoDbFactory) {
+        return new MongoTemplate(mongoDbFactory);
+    }
+
+    @Override
+    protected String getDatabaseName() {
+        return "Quotes";
+    }
+
+    @Override
+    public Mongo mongo() throws Exception {
+        Fongo fongo = new Fongo("mongo server local");
+        return fongo.getMongo();
+
+    }
+
+    @Override
+    protected String getMappingBasePackage() {
+        return "io.pivotal.springtrader.quotes.domain";
+    }
+
+
 
     /*
      * {"Status":"SUCCESS","Name":"EMC Corp","Symbol":"EMC","LastPrice":26.135,

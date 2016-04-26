@@ -6,6 +6,7 @@ import io.pivotal.springtrader.quotes.repositories.StockRepository;
 import io.pivotal.springtrader.quotes.services.QuoteService;
 import org.junit.After;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -14,6 +15,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
 
+import static io.pivotal.springtrader.quotes.TestConfig.*;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.*;
@@ -24,6 +26,7 @@ import static org.junit.Assert.*;
  * @author David Ferreira Pinto
  * @author cq
  */
+@Category(IntegrationTests.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = {QuotesApplication.class})
 @ActiveProfiles("test")
@@ -49,9 +52,9 @@ public class QuoteServiceIntegrationTest {
      */
     @Test
     public void getQuote() throws Exception {
-        Stock quote = quoteService.getQuote(TestConfiguration.QUOTE_SYMBOL);
-        assertEquals(TestConfiguration.QUOTE_SYMBOL, quote.getSymbol());
-        assertEquals(TestConfiguration.QUOTE_NAME, quote.getName());
+        Stock quote = quoteService.getQuote(QUOTE_SYMBOL);
+        assertEquals(QUOTE_SYMBOL, quote.getSymbol());
+        assertEquals(QUOTE_NAME, quote.getName());
     }
 
     /**
@@ -61,7 +64,7 @@ public class QuoteServiceIntegrationTest {
      */
     @Test(expected = SymbolNotFoundException.class)
     public void getNullQuote() throws Exception {
-        quoteService.getQuote(TestConfiguration.NULL_QUOTE_SYMBOL);
+        quoteService.getQuote(NULL_QUOTE_SYMBOL);
     }
 
     /**
@@ -71,11 +74,11 @@ public class QuoteServiceIntegrationTest {
      */
     @Test
     public void getCompanyInfo() throws Exception {
-        List<Stock> comps = quoteService.companiesByNameOrSymbol(TestConfiguration.QUOTE_SYMBOL);
+        List<Stock> comps = quoteService.companiesByNameOrSymbol(QUOTE_SYMBOL);
         assertFalse(comps.isEmpty());
         boolean pass = false;
         for (Stock info : comps) {
-            if (info.getSymbol().equals(TestConfiguration.QUOTE_SYMBOL)) {
+            if (info.getSymbol().equals(QUOTE_SYMBOL)) {
                 pass = true;
             }
         }
@@ -89,7 +92,7 @@ public class QuoteServiceIntegrationTest {
      */
     @Test
     public void getNullCompanyInfo() throws Exception {
-        List<Stock> comps = quoteService.companiesByNameOrSymbol(TestConfiguration.NULL_QUOTE_SYMBOL);
+        List<Stock> comps = quoteService.companiesByNameOrSymbol(NULL_QUOTE_SYMBOL);
         assertTrue(comps.isEmpty());
     }
 

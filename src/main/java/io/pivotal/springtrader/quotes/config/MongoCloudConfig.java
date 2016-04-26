@@ -14,7 +14,6 @@ import org.springframework.data.mongodb.MongoDbFactory;
 @Profile("cloud")
 public class MongoCloudConfig extends AbstractCloudConfig {
 
-
     @Bean
     public MongoDbFactory mongoDbFactory() {
         return connectionFactory().mongoDbFactory();

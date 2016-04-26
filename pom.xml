@@ -118,6 +118,14 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.11</version>
+                <configuration>
+                    <groups>io.pivotal.springtrader.quotes.UnitTests</groups>
+                    <excludedGroups>io.pivotal.springtrader.quotes.IntegrationTests</excludedGroups>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

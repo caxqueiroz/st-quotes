@@ -8,6 +8,7 @@ import io.pivotal.springtrader.quotes.services.QuoteService;
 import net.minidev.json.JSONArray;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -18,6 +19,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.pivotal.springtrader.quotes.TestConfig.*;
 import static org.hamcrest.Matchers.isA;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.when;
@@ -31,6 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author David Ferreira Pinto
  * @author cq
  */
+@Category(UnitTests.class)
 public class QuoteControllerTest {
     MockMvc mockMvc;
 
@@ -53,10 +56,10 @@ public class QuoteControllerTest {
      */
     @Test
     public void getQuote() throws Exception {
-        when(service.getQuote(TestConfiguration.QUOTE_SYMBOL)).thenReturn(TestConfiguration.stock());
+        when(service.getQuote(QUOTE_SYMBOL)).thenReturn(stock());
 
         mockMvc.perform(
-                get("/quote/" + TestConfiguration.QUOTE_SYMBOL).contentType(
+                get("/quote/" + QUOTE_SYMBOL).contentType(
                         MediaType.APPLICATION_JSON)).andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(
@@ -64,23 +67,23 @@ public class QuoteControllerTest {
                                 MediaType.APPLICATION_JSON))
                 .andExpect(
                         jsonPath("$.Name").value(
-                                TestConfiguration.QUOTE_NAME))
+                                QUOTE_NAME))
                 .andExpect(
                         jsonPath("$.Symbol").value(
-                                TestConfiguration.QUOTE_SYMBOL))
+                                QUOTE_SYMBOL))
                 .andExpect(
                         jsonPath("$.LastPrice").value(
-                                TestConfiguration.QUOTE_LAST_PRICE))
+                                QUOTE_LAST_PRICE))
                 //.andExpect(
                 //		jsonPath("$.Change",Matchers.equalTo( (Number)TestConfiguration.QUOTE_CHANGE))))
                 .andExpect(
                         jsonPath("$.ChangePercent").value(
-                                TestConfiguration.QUOTE_CHANGE_PERCENT))
+                                QUOTE_CHANGE_PERCENT))
                 .andExpect(
                         jsonPath("$.Timestamp", notNullValue()))
                 .andExpect(
                         jsonPath("$.MSDate").value(
-                                TestConfiguration.QUOTE_MSDATE));
+                                QUOTE_MSDATE));
     }
 
     /*
@@ -89,11 +92,11 @@ public class QuoteControllerTest {
      */
     @Test
     public void getNullQuote() throws Exception {
-        when(service.getQuote(TestConfiguration.NULL_QUOTE_SYMBOL)).thenThrow(
-                new SymbolNotFoundException(TestConfiguration.NULL_QUOTE_SYMBOL));
+        when(service.getQuote(NULL_QUOTE_SYMBOL)).thenThrow(
+                new SymbolNotFoundException(NULL_QUOTE_SYMBOL));
 
         mockMvc.perform(
-                get("/quote/" + TestConfiguration.NULL_QUOTE_SYMBOL).contentType(
+                get("/quote/" + NULL_QUOTE_SYMBOL).contentType(
                         MediaType.APPLICATION_JSON)).andExpect(status().isBadRequest())
                 .andDo(print());
 
@@ -106,10 +109,10 @@ public class QuoteControllerTest {
     @Test
     public void getCompanies() throws Exception {
         List<Stock> comps = new ArrayList<>();
-        comps.add(TestConfiguration.stock());
-        when(service.companiesByNameOrSymbol(TestConfiguration.QUOTE_NAME)).thenReturn(comps);
+        comps.add(stock());
+        when(service.companiesByNameOrSymbol(QUOTE_NAME)).thenReturn(comps);
         mockMvc.perform(
-                get("/company/" + TestConfiguration.QUOTE_NAME).contentType(
+                get("/company/" + QUOTE_NAME).contentType(
                         MediaType.APPLICATION_JSON)).andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(jsonPath("$..*", isA(JSONArray.class)));
