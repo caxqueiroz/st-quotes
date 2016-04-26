@@ -5,6 +5,7 @@ import io.pivotal.springtrader.quotes.repositories.StockRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -26,21 +27,30 @@ public class DatabaseLoader {
         this.stockRepository = repository;
     }
 
+
+    @Value("${expiration.time}")
+    private int expirationTime;
+
     @PostConstruct
     void init() {
-        ObjectMapper mapper = new ObjectMapper();
 
-        try {
-            logger.info("DatabaseLoader:init - Loading data into mongodb");
-            Stock[] arrayOfStocks = mapper.readValue(DatabaseLoader.class.getResource("/data.json"),Stock[].class);
-            List<Stock> stocks = Arrays.asList(arrayOfStocks);
-            stockRepository.save(stocks);
-            logger.info(stockRepository.count() + " stocks loaded into the Quotes collection");
+        if(expirationTime == -1){
+            ObjectMapper mapper = new ObjectMapper();
+
+            try {
+                logger.info("DatabaseLoader:init - Loading data into mongodb");
+                Stock[] arrayOfStocks = mapper.readValue(DatabaseLoader.class.getResource("/data.json"),Stock[].class);
+                List<Stock> stocks = Arrays.asList(arrayOfStocks);
+                stockRepository.save(stocks);
+                logger.info(stockRepository.count() + " stocks loaded into the Quotes collection");
 
 
-        } catch (IOException e) {
-            e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+
+
     }
 
 }

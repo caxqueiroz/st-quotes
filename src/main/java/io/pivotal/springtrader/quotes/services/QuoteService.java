@@ -31,11 +31,13 @@ public class QuoteService {
     private static final Logger logger = LoggerFactory.getLogger(QuoteService.class);
 
     @Value("${api.url.company}")
-    private String companyUrl = "http://dev.markitondemand.com/MODApis/Api/v2/Lookup/json?input={name}";
+    private String companyUrl;
 
     @Value("${api.url.quote}")
-    private String quoteUrl = "http://dev.markitondemand.com/MODApis/Api/v2/Quote/json?symbol={symbol}";
+    private String quoteUrl;
 
+    @Value("${expiration.time}")
+    private int expirationTime;
 
     private RestOperations restOperations = new RestTemplate();
 
@@ -60,19 +62,35 @@ public class QuoteService {
 
         symbol = symbol.toUpperCase();
         Stock stock = stockRepository.findOne(symbol);
+        if(expirationTime == -1 && stock == null){ // local
+            throw new SymbolNotFoundException("Stock: " + symbol + " NOT FOUND!!");
 
-        //what's happen if a stock has no info about its quotes?
-        if (stock == null || stock.getStatus() == null) {
-            stock = createStock(symbol);
-            stock = stockRepository.save(stock);
+        }else if (stock == null || stock.getStatus() == null) {
+                stock = fetchStock(symbol);
+                stock = stockRepository.save(stock);
         }
-
-
         return stock;
 
     }
 
-    private Stock createStock(String symbol) throws SymbolNotFoundException {
+    //Stock stock = companiesByNameOrSymbol(symbol)
+    //.stream()
+    //.filter(s -> s.getSymbol()
+    //        .equalsIgnoreCase(symbol))
+    //        .findFirst().orElse(new Stock());
+
+    //if (stock.getSymbol() == null) throw new SymbolNotFoundException("Symbol not found: " + symbol);
+    //returnedStock.setName(stock.getName());
+    //returnedStock.setExchange(stock.getExchange());
+
+
+    /**
+     *
+     * @param symbol
+     * @return
+     * @throws SymbolNotFoundException
+     */
+    private Stock fetchStock(String symbol) throws SymbolNotFoundException {
 
         Stock returnedStock;
 
@@ -82,20 +100,11 @@ public class QuoteService {
             params.put("symbol", symbol);
             returnedStock = restOperations.getForObject(quoteUrl, Stock.class, params);
             logger.debug("QuoteService.getQuote: retrieved quote: " + returnedStock);
-
-            Stock stock = companiesByNameOrSymbol(symbol)
-                    .stream()
-                    .filter(s -> s.getSymbol()
-                            .equalsIgnoreCase(symbol))
-                    .findFirst().orElse(new Stock());
-
-            if (stock.getSymbol() == null) throw new SymbolNotFoundException("Symbol not found: " + symbol);
-            returnedStock.setName(stock.getName());
-            returnedStock.setExchange(stock.getExchange());
+            if(returnedStock.getSymbol()==null) throw new SymbolNotFoundException("Symbol/Company: " + symbol);
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            throw e;
+            throw new SymbolNotFoundException(e.getMessage());
         }
         return returnedStock;
     }
@@ -112,32 +121,38 @@ public class QuoteService {
     public List<Stock> companiesByNameOrSymbol(String name) {
         logger.debug("QuoteService.companiesByNameOrSymbol: retrieving info for: " + name);
         List<Stock> stockList = new ArrayList<>();
+
         try {
 
             //only search for name.
-            stockList = stockRepository.findByNameLike(name);
-            if (stockList.size() > 0) return stockList;
+            if(expirationTime == -1){
+                stockList = stockRepository.findByNameLike(name);
+                if(stockList.isEmpty()) {
 
-            Map<String, String> params = new HashMap<>();
-            params.put("name", name);
-            Map[] companies = restOperations.getForObject(companyUrl, Map[].class, params);
+                    Stock stock = stockRepository.findOne(name);
+                    if(stock.getSymbol()!=null) stockList.add(stock);
+                }
+                return stockList;
+            }else{
+                Map<String, String> params = new HashMap<>();
+                params.put("name", name);
+                Map[] companies = restOperations.getForObject(companyUrl, Map[].class, params);
 
-
-            for (Map<String, String> company : companies) {
-                Stock stock = new Stock();
-                stock.setName(company.get("Name"));
-                stock.setExchange(company.get("Exchange"));
-                stock.setSymbol(company.get("Symbol"));
-                stockList.add(stock);
+                for (Map<String, String> company : companies) {
+                    Stock stock = new Stock();
+                    stock.setName(company.get("Name"));
+                    stock.setExchange(company.get("Exchange"));
+                    stock.setSymbol(company.get("Symbol"));
+                    stockList.add(stock);
+                }
+                logger.debug("QuoteService.companiesByNameOrSymbol: retrieved info: " + stockList);
+                return stockList;
             }
-
-            logger.debug("QuoteService.companiesByNameOrSymbol: retrieved info: " + stockList);
-
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-
         return stockList;
+
     }
 }

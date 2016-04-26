@@ -4,7 +4,6 @@ import io.pivotal.springtrader.quotes.domain.Stock;
 import io.pivotal.springtrader.quotes.exceptions.SymbolNotFoundException;
 import io.pivotal.springtrader.quotes.repositories.StockRepository;
 import io.pivotal.springtrader.quotes.services.QuoteService;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -17,7 +16,6 @@ import java.util.List;
 
 import static io.pivotal.springtrader.quotes.TestConfig.*;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.*;
 
 /**
@@ -38,12 +36,14 @@ public class QuoteServiceIntegrationTest {
     @Autowired
     StockRepository stockRepository;
 
-    @After
-    public void tearDown() throws Exception {
 
-        stockRepository.deleteAll();
 
-    }
+//    @After
+//    public void tearDown() throws Exception {
+//
+//        stockRepository.deleteAll();
+//
+//    }
 
     /**
      * Tests retrieving a stock from the external quoteService.
@@ -98,12 +98,10 @@ public class QuoteServiceIntegrationTest {
 
     @Test
     public void searchForCompanies() throws Exception {
-        List<Stock> comps = quoteService.companiesByNameOrSymbol("alphabet");
+        List<Stock> comps = quoteService.companiesByNameOrSymbol("Microsoft");
         comps.stream().forEach(System.out::println);
-        assertThat(comps.size(), greaterThan(1));
-        assertThat(comps.stream().anyMatch(c -> c.getSymbol().equalsIgnoreCase("GOOGL")), equalTo(true));
-        assertThat(comps.stream().anyMatch(c -> c.getSymbol().equalsIgnoreCase("GOOG")), equalTo(true));
-
+        assertThat(comps.size(), equalTo(1));
+        assertThat(comps.stream().anyMatch(c -> c.getSymbol().equalsIgnoreCase("MSFT")), equalTo(true));
 
     }
 
