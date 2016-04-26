@@ -1,4 +1,5 @@
-*.yml
+manifest.yml
+application.yml
 *.iml
 target/
 *.log
